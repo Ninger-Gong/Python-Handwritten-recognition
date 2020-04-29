@@ -6,6 +6,7 @@ import torch
 import torchvision
 from matplotlib import transforms
 from torch import nn
+import numpy as np
 
 ## load the MNIST dataset into the file
 train_dataset = torchvision.datasets.MNIST(root='./data',train=True, transform=transforms.ToTensor(), download=True)
@@ -14,6 +15,7 @@ test_dataset = torchvision.datasets.MNIST(root='./data',train=False, transform=t
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=100, shuffle=True)
 test_loader = torch.utils.data.DataLoader(dataset=test_dataset,  batch_size=100, shuffle=False)
 
+# each convulutional layer is following a max pooling layer
 class cnn(nn.Module):
     def __init__(self):
         super(cnn,self).__init__()
