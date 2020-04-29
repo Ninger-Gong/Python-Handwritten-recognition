@@ -1,0 +1,93 @@
+#This file is for the functions of the handwritten digits recognition system project
+#Group 43
+#Member: Ninger Gong and Bear Xie
+
+import numpy as np
+import torch
+import torchvision
+from caffe2.quantization.server.observer_test import net
+from matplotlib.pyplot import plt
+from torchvision import transforms,datasets
+from torch import nn,optim
+from torch.utils.data import DataLoader
+import cv2
+
+#Load the MNIST dataset into the file
+mydataset = np.genfromtxt()
+transforms = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5,),(0.5,)),])
+
+# MNIST dataset
+trainset = datasets.MNIST('Train_set',download=True,train=True,transforms = transforms)
+testset = datasets.MNIST('test_set',download=True,train=False,transforms = transforms)
+#batch size is the number of pictures that we want to read in one go
+trainloader = torch.utils.data.Dataloader(trainset,batch_size = 64,shuffle = True)
+testloader = torch.utils.data.Dataloader(testset,batch_size = 64,shuffle = True)
+
+#single picture viewable
+image,label = next(iter(trainloader))
+img = torchvision.utils.make_grid(image)
+img = img.numpy().transpose(1,2,0)
+std = [0.5,0.5,0.5]
+mean = [0.5,0.5,0.5]
+img = img*std+mean
+print(label)
+cv2.imshow('win',img)
+key_pressed = cv2.waitKey(0)
+
+
+#Models
+class Model(torch.nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.convolution = nn.Sequential(  # the first convolution layer
+            nn.Conv2d(1, 64, kernel_size=3,stride=1,padding=1),  # 25*26*26 or (1,64,kernel_size=3,stride = 1,padding = 1)
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64,128,kernel_size=3,stride=1,padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(stride=2,kernel_size=2),
+            ##nn.BatchNorm2d(25),
+            ##nn.ReLU(inplace=True)
+        )
+        self.dense = nn.Sequential(
+            nn.Linear(14*14*128,1024),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(1024,10)
+        )
+
+    def forward(self,x):
+        x = self.convolution(x)
+        x = x.view(-1,14*14*128)
+        x = self.dense(x)
+        return x
+
+#training model
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+batch_size = 64
+LR =0.001
+
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam( #improve the algorithm
+    net.parameter(),
+    lr=LR
+)
+epoch = 1
+
+if __name__ == '__main__':
+    for epoch in range(epoch):
+        sum_loss = 0.0
+        for i,data in enumerate(trainloader):
+            input,labels = data
+            input,labels = torch.autograd.Variable(input).cuda(),torch.autograd.Variable(labels).cuda()
+            optimizer.zero_grad()
+            output = net(input)
+            loss = criterion(output,labels)
+            loss.backward()
+            optimizer.step()
+
+            sum_loss += loss.item()
+            if i % 99 == 99:
+                print('[%d, %d] loss : %.03f' %(epoch + 1, i + 1, sum_loss / 100) )
+                sum_loss = 0.0
+
+# testing model
