@@ -5,12 +5,13 @@
 import numpy as np
 import torch
 import torchvision
-from caffe2.quantization.server.observer_test import net
-from matplotlib.pyplot import plt
 from torchvision import transforms,datasets
 from torch import nn,optim
 from torch.utils.data import DataLoader
-import cv2
+torch.__version__
+
+# judge whether use GPU or not
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 #Load the MNIST dataset into the file
 mydataset = np.genfromtxt()
@@ -61,33 +62,23 @@ class Model(torch.nn.Module):
         x = self.dense(x)
         return x
 
-#training model
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 64
-LR =0.001
+#batch_size = 64
+#LR =0.001
 
-criterion = nn.CrossEntropyLoss()
+model = Model().to(device)
 optimizer = optim.Adam( #improve the algorithm
-    net.parameter(),
-    lr=LR
+    model.parameter(),
 )
-epoch = 1
 
-if __name__ == '__main__':
-    for epoch in range(epoch):
-        sum_loss = 0.0
-        for i,data in enumerate(trainloader):
-            input,labels = data
-            input,labels = torch.autograd.Variable(input).cuda(),torch.autograd.Variable(labels).cuda()
-            optimizer.zero_grad()
-            output = net(input)
-            loss = criterion(output,labels)
-            loss.backward()
-            optimizer.step()
-
-            sum_loss += loss.item()
-            if i % 99 == 99:
-                print('[%d, %d] loss : %.03f' %(epoch + 1, i + 1, sum_loss / 100) )
-                sum_loss = 0.0
+#training model
+def train_Model(model,device,trainloader,optimizer,epoch):
+    model.train()
+    for batch_idx, (data, target) in enumerate(trainloader):
+        data, target = data.to(device),target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        optimizer.step()
+        
+    
 
 # testing model
