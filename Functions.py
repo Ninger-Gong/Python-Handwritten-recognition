@@ -69,6 +69,7 @@ model = Model().to(device)
 optimizer = optim.Adam( #improve the algorithm
     model.parameter(),
 )
+criterion = nn.CrossEntropyLoss()
 
 #training model
 def train_Model(model,device,trainloader,optimizer,epoch):
@@ -78,7 +79,20 @@ def train_Model(model,device,trainloader,optimizer,epoch):
         optimizer.zero_grad()
         output = model(data)
         optimizer.step()
+        loss = criterion(output,target)
+        loss.backward()
+        if batch_idx % 10 == 0:
+            Loss.append = loss.data[0]
         
     
-
 # testing model
+def testing_Model(model,device,testloader,optimizer,epoch):
+    model.eval()
+    
+
+# print out the final result that is recognized
+def output(filename):
+    img = Image.open(filename)
+    img = np.array(img) #turn the image into array
+    
+    
