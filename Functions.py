@@ -91,8 +91,23 @@ def testing_Model(model,device,testloader,optimizer,epoch):
     
 
 # print out the final result that is recognized
-def output(filename):
+def inputImage(filename):
     img = Image.open(filename)
-    img = np.array(img) #turn the image into array
-    
-    
+    img = np.array(img)
+    if img.size[0] != 28 or img.size[1] != 28:
+        img = img.resize((28, 28))
+    array1 = []
+    for i in range(28):
+        for j in range(28):
+            pixel = 1.0 - float(img.getpixel((j, i))) / 255
+            array1.append(pixel)
+    array = np.array(array1).reshape((1, 28, 28, 1))
+    return array
+
+
+# print the predict number
+for i in range(20):
+    training_batch = zip(range(0, len(trainloader), batch_size))
+    for start, end in training_batch:
+        
+
