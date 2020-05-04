@@ -9,7 +9,7 @@ from utils import plot_image, plot_curve, one_hot
 
 
 batch_size = 512
-#step one load dataset
+#step one load and download dataset
 train_load = torch.utils.data.DataLoader(
     torchvision.datasets.MNIST('mnist_data', train=True, download= True,
                                transform=torchvision.transforms.Compose([
@@ -32,6 +32,7 @@ x, y = next(iter(train_load))
 print(x.shape, y.shape,x.min(), x.max())
 plot_image(x, y ,'image sample')
 
+#Model construction
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -43,11 +44,11 @@ class Net(nn.Module):
 
     def forward(self, x):
         #x: [b,1,28,28}
-        # h1 = relu(xw1 + b1)
+        # h1 = relu(x * w1 + b1)
         x = F.relu(self.fc1(x))
-        # h2 = relu(h1w2 + b2)
+        # h2 = relu(h1 * w2 + b2)
         x = F.relu(self.fc2(x))
-        #h3 = h2w4 + b3
+        #h3 = h2 * w3 + b3
         x = self.fc3(x)
 
         return x
@@ -60,15 +61,15 @@ for epoch in range (3):
     for batch_idx, (x,y) in enumerate(train_load):
 
         # print(x.shape, y.shape)
-        x = x.view(x.size(0), 28*28)
+        x = x.view(x.size(0), 28*28)  # flatten 4-dimension to 2-dimension
         out = net(x)
         y_onehot = one_hot(y)
         # loss = mse(out, y_onehot)
-        loss = F.mse_loss(out, y_onehot)
+        loss = F.mse_loss(out, y_onehot)  # Mean squared error
 
-
-        loss.backward()
-        # w' = w - lr* grad
+        optimizer.zero_grad()
+        loss.backward()  # gradien calculation
+        # w' = w - lr * grad
         optimizer.step()
 
         train_loss .append(loss.item())
@@ -79,20 +80,22 @@ for epoch in range (3):
 plot_curve(train_loss)
 
 # we got optimal [w1, b1, w2, b2, w3, b3]
+
+# Then test and get the accuracy
 total_correct = 0
 for x, y in test_loader:
     x = x.view(x.size(0), 28*28)
     out = net(x)
     # out : [b, 10] ==> pred :[b]
     pred = out.argmax(dim = 1)
-    correct = pred.eq(y).sum.float().item()
+    correct = pred.eq(y).sum().float().item()
     total_correct += correct
 
 total_num = len(test_loader.dataset)
 acc = total_correct / total_num
-print('test acc', acc)
+print('test acc: ', acc)
 
 x, y = next(iter(test_loader))
-out = net(x.view(x.size(0), 28* 28))
+out = net(x.view(x.size(0), 28*28))
 pred = out.argmax(dim = 1)
 plot_image(x, pred, 'test')
