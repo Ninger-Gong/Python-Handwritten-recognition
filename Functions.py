@@ -8,7 +8,6 @@ import torchvision
 from torchvision import transforms,datasets
 from torch import nn,optim
 from torch.utils.data import DataLoader
-torch.__version__
 
 # judge whether use GPU or not
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -32,8 +31,7 @@ std = [0.5,0.5,0.5]
 mean = [0.5,0.5,0.5]
 img = img*std+mean
 print(label)
-cv2.imshow('win',img)
-key_pressed = cv2.waitKey(0)
+
 
 
 #Models
