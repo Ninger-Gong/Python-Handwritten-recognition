@@ -31,8 +31,7 @@ class ResNet(torch.nn.Module):
             nn.MaxPool2d(3,1,1) # in channel, out channel, padding
         )
         # 32 layers in total
-        self.layer1 = self
-._make_layer(64,128,3)
+        self.layer1 = self._make_layer(64,128,3)
         self.layer2 = self._make_layer(128,256,4,stride = 2)
         self.layer3 = self._make_layer(256,512,6,stride = 2)
         self.layer4 = self._make_layer(512,512,3, stride = 2)
