@@ -1,7 +1,7 @@
 from PIL import Image
 
 # open the image
-input_img = Image.open("Digit6.png",str = "r") # the image is changable
+input_img = Image.open("Digit6.png","r") # the image is changable
 # Process the image
 preprocess = transforms.Compose([
     transforms.Resize(256),
