@@ -27,3 +27,16 @@ def one_hot(label, depth = 10):
     idx = torch.LongTensor(label).view(-1,1)
     out.scatter_(dim = 1, index = idx, value = 1)
     return out
+
+def input_image(filename):
+    input_img = Image.open((filename,"r"))
+    # preprocess the picture
+    preprocess = transforms.Compose( [
+        transforms.Resize( 256 ),
+        transforms.CenterCrop( 224 ),
+        transforms.ToTensor(),
+        transforms.Normalize( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225] )
+    ] )
+    input_tensor = preprocess( input_img )
+    input_batch = input_tensor.unsqueeze( 0 )
+    return input_batch
