@@ -60,6 +60,7 @@ train_loader = torch.utils.data.DataLoader(
     datasets.MNIST('data', train = True, download = True,
               transform = transforms.Compose([
                   transforms.Resize(224),
+                  transforms.Grayscale(3),
                   transforms.ToTensor(),
                   transforms.Normalize((0.5), (0.5))
               ])),
@@ -68,7 +69,8 @@ train_loader = torch.utils.data.DataLoader(
 # Test dataset
 test_loader = torch.utils.data.DataLoader(
     datasets.MNIST('data', train = False, transform = transforms.Compose([
-                transforms.Resize(224),
+                transforms.Resize(224), # as the ResNet is used for size of 224
+                transforms.Grayscale(3),
                 transforms.ToTensor(),
                 transforms.Normalize((0.5), (0.5))
             ])),
@@ -80,6 +82,7 @@ class ResidualBlock( nn.Module ):
     # module: Residual Block
     def __init__(self, inchannel, outchannel, stride=1, shortcut=None):
         super( ResidualBlock, self ).__init__()
+        #self.pre = nn.Conv2d(1,3,kernel_size=1)
         self.left = nn.Sequential(
             nn.Conv2d(inchannel, outchannel, 1, stride, 1, bias=False ),
             nn.BatchNorm2d( outchannel ),
@@ -91,6 +94,7 @@ class ResidualBlock( nn.Module ):
         self.right = shortcut
 
     def forward(self, x):
+        #x = self.pre(x)
         out = self.left( x )
         residual = x if self.right is None else self.right( x )
         out += residual
@@ -102,8 +106,8 @@ class ResNet( nn.Module ):
     # ResNet with multiple layers,each layer contains with multiple residual block
     # residual block , use _make_layer for layers
     def __init__(self, num_classes=10):
-        super( ResNet, self ).__init__()
-        self.pretreat = nn.Conv2d(1,3,kernel_size=1) # turn the dataset from 1D to 3D
+        super(ResNet, self).__init__()
+        #self.pretreat = nn.Conv2d(1,3,kernel_size=1) # turn the dataset from 1D to 3D
         self.pre = nn.Sequential(
             nn.Conv2d(3,64,kernel_size=7,stride=2,padding=3),# 1 input tunnels, 64 output tunnels, convolutional layer 7*7
             nn.BatchNorm2d(64),
@@ -111,7 +115,7 @@ class ResNet( nn.Module ):
             nn.MaxPool2d(3, 2, 1)
         )
         # repeated layer,with 3,4,6,3 residual blocks each
-        self.layer1 = self._make_layer( 64, 64, 3 )
+        self.layer1 = self._make_layer(64,64,3)
         self.layer2 = self._make_layer( 64, 128, 4, stride=2 )
         self.layer3 = self._make_layer( 128, 256, 6, stride=2 )
         self.layer4 = self._make_layer( 256, 512, 3, stride=2 )
@@ -133,7 +137,7 @@ class ResNet( nn.Module ):
         return nn.Sequential( *layers )
 
     def forward(self, x):
-        x = self.pretreat(x)
+        #x = self.pretreat(x)
         x = self.pre( x )
         x = self.layer1( x )
         x = self.layer2( x )
