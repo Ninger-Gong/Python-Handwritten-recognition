@@ -62,7 +62,7 @@ train_loader = torch.utils.data.DataLoader(
                   transforms.Resize(224),
                   transforms.Grayscale(3),
                   transforms.ToTensor(),
-                  transforms.Normalize((0.5), (0.5))
+                  transforms.Normalize((.1037,), (.3081,))
               ])),
     batch_size = BATCH_SIZE, shuffle = True)
 
@@ -72,7 +72,7 @@ test_loader = torch.utils.data.DataLoader(
                 transforms.Resize(224), # as the ResNet is used for size of 224
                 transforms.Grayscale(3),
                 transforms.ToTensor(),
-                transforms.Normalize((0.5), (0.5))
+                transforms.Normalize((.1037,), (.3081,))
             ])),
     batch_size = BATCH_SIZE, shuffle = True)
 
