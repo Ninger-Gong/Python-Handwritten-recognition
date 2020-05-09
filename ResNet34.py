@@ -27,7 +27,7 @@ class ResNet( nn.Module ):  # 224x224x3
     def __init__(self, num_classes=1):
         super( ResNet, self ).__init__()
         self.pre = nn.Sequential(
-            nn.Conv2d( 3, 64, 7, stride=2, padding=3, bias=False ),  # (224+2*p-)/2(向下取整)+1，size减半->112
+            nn.Conv2d( 1, 64, 7, stride=2, padding=3, bias=False ),  # (224+2*p-)/2(向下取整)+1，size减半->112
             nn.BatchNorm2d( 64 ),  # 112x112x64
             nn.ReLU( inplace=True ),
             nn.MaxPool2d( 3, 2, 1 )  # kernel_size=3, stride=2, padding=1
