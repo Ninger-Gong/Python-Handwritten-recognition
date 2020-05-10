@@ -9,12 +9,12 @@ import torchvision.transforms as transforms
 import torch.nn.functional as F
 import time
 
-#定义网络结构
+#Net Model
 class AlexNet(nn.Module):
     def __init__(self):
         super(AlexNet,self).__init__()
 
-        # 由于MNIST为28x28， 而最初AlexNet的输入图片是227x227的。所以网络层数和参数需要调节
+        # because the size of images of MNIST is 28x28， but AlexNet is 227x227. So the parameter of the Net needs to be changed
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1) #AlexCONV1(3,96, k=11,s=4,p=0)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)#AlexPool1(k=3, s=2)
         self.relu1 = nn.ReLU()
@@ -69,7 +69,7 @@ transform1 = transforms.Compose([
                     transforms.ToTensor()
 ])
 
-# 加载数据
+# dataset of MNIST
 trainset = torchvision.datasets.MNIST(root='./data',train=True,download=True,transform=transform)
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=100,shuffle=True,num_workers=0)# windows下num_workers设置为0，不然有bug
@@ -80,11 +80,13 @@ testloader = torch.utils.data.DataLoader(testset,batch_size=100,shuffle=False,nu
 #net
 net = AlexNet()
 
-#损失函数:这里用交叉熵
+#loss function
 criterion = nn.CrossEntropyLoss()
 
-#优化器 这里用SGD
-optimizer = optim.SGD(net.parameters(),lr=1e-3, momentum=0.9)
+#SGD
+#optimizer = optim.SGD(net.parameters(),lr=1e-3, momentum=0.9)
+#Adam
+optimizer = optim.Adam(model.parameters())
 
 #device : GPU or CPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -93,7 +95,7 @@ net.to(device)
 
 print("Start Training!")
 
-num_epochs = 20 #训练次数
+num_epochs = 20 #number of training
 
 for epoch in range(num_epochs):
     running_loss = 0
@@ -114,12 +116,13 @@ for epoch in range(num_epochs):
 print("Finished Traning")
 
 
-#保存训练模型
+#save the model
 torch.save(net, 'MNIST.pkl')
 net = torch.load('MNIST.pkl')
-#开始识别
+
+#start recognition
 with torch.no_grad():
-    #在接下来的代码中，所有Tensor的requires_grad都会被设置为False
+    #All Tensor的requires_grad will be set as False
     correct = 0
     total = 0
 
@@ -132,5 +135,5 @@ with torch.no_grad():
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
-    print('Accuracy of the network on the 10000 test images:{}%'.format(100 * correct / total)) #输出识别准确率
+    print('Accuracy of the network on the 10000 test images:{}%'.format(100 * correct / total)) #Accuracy of the system
 
