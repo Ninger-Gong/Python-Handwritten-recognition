@@ -6,7 +6,8 @@ def image_loader(filename):
     # load the image and return the cuda tensor
     image = Image.open(filename)
     loader = transforms.Compose([
-        transforms.Resize(256),
+        transforms.Resize(28),
+        transforms.Grayscale(1),
         transforms.ToTensor()
     ])
     image = loader(image).float()
