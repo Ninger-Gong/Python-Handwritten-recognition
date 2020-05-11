@@ -19,4 +19,3 @@ def image_loader(filename):
 input_batch = image_loeader(filename)
 if torch.cuda.is_available():
     input_batch = input_batch.to(Device)
-    model.to(Device)
