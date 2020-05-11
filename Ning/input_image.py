@@ -16,6 +16,6 @@ def image_loader(filename):
 
 
 # move the input and model to GPU for speed if available
-input_batch = image_loeader(filename)
+input_batch = image_loader(filename)
 if torch.cuda.is_available():
     input_batch = input_batch.to(Device)
