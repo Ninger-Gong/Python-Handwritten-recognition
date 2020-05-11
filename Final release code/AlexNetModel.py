@@ -124,13 +124,13 @@ with torch.no_grad():
     #All Tensor的requires_grad will be set as False
     correct = 0
     total = 0
-for data in testloader:
-    images, labels = data
-    images, labels = images.to(device), labels.to(device)
+    for data in testloader:
+        images, labels = data
+        images, labels = images.to(device), labels.to(device)
 
-    out = net(images)
-    _, predicted = torch.max(out.data, 1)
-    total += labels.size(0)
-    correct += (predicted == labels).sum().item()
+        out = net(images)
+        _, predicted = torch.max(out.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
 
     print('Accuracy of the network on the 10000 test images:{}%'.format(100 * correct / total)) #Accuracy of the system
