@@ -7,11 +7,11 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 
-BATCH_SIZE = 512 # 大概需要2G的显存
-EPOCHS = 10 # 总共训练批次
+BATCH_SIZE = 512 
+EPOCHS = 10 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# 下载训练集
+# download the dataset
 train_loader = torch.utils.data.DataLoader(
     datasets.MNIST('data', train = True, download = True,
               transform = transforms.Compose([
@@ -20,7 +20,7 @@ train_loader = torch.utils.data.DataLoader(
               ])),
     batch_size = BATCH_SIZE, shuffle = True)
 
-# 测试集
+# test set
 test_loader = torch.utils.data.DataLoader(
     datasets.MNIST('data', train = False, transform = transforms.Compose([
         transforms.ToTensor(),
@@ -29,7 +29,7 @@ test_loader = torch.utils.data.DataLoader(
     batch_size = BATCH_SIZE, shuffle = True)
 
 
-# 定义模型
+# Define model
 class LeNet( nn.Module ):
     def __init__(self):
         super( LeNet, self ).__init__()
@@ -66,11 +66,11 @@ class LeNet( nn.Module ):
         x = self.fc2( x )
         return x
 
-    # 生成模型和优化器
+    # Model and optimization
 model = LeNet().to(DEVICE)
 optimizer = optim.Adam(model.parameters())
 
-# 定义训练函数
+# Define training mode
 def train(model, device, train_loader, optimizer, epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -86,7 +86,7 @@ def train(model, device, train_loader, optimizer, epoch):
                 100. * batch_idx / len(train_loader), loss.item()))
 
 
-# 定义测试函数
+# Define testing function
 def test(model, device, test_loader):
     model.eval()
     test_loss = 0
@@ -95,8 +95,8 @@ def test(model, device, test_loader):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum')  # 将一批的损失相加
-            pred = output.max(1, keepdim=True)[1]  # 找到概率最大的下标
+            test_loss += F.nll_loss(output, target, reduction='sum')  # sum up the loss
+            pred = output.max(1, keepdim=True)[1]  # find the largest one
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
