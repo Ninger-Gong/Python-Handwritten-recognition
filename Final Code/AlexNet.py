@@ -10,50 +10,49 @@ import torch.nn.functional as F
 import time
 
 #Net Model
+
+#Define the Network Model
 class AlexNet(nn.Module):
-    def __init__(self):
-        super(AlexNet,self).__init__()
+    def __init__(self, num_classes=1000):
+        super( AlexNet, self ).__init__()
+        self.features = nn.Sequential(
+            # because the size of images of MNIST is 28x28， but AlexNet is 227x227. So the parameter of the Net needs to be changed
+            # First convolution layer，1 input channel，32 output with 11*11 kernel
+            nn.Conv2d( 1, 32, kernel_size=3, padding=1 ),#AlexCONV1(3,96, k=11,s=4,p=0)
+            # relu after convolition
+            nn.ReLU( inplace=True ),
+            # Max poolling
+            nn.MaxPool2d( kernel_size=2, stride=2 ),#AlexPool1(k=3, s=2)
+            # here is one block
 
-        # because the size of images of MNIST is 28x28， but AlexNet is 227x227. So the parameter of the Net needs to be changed
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1) #AlexCONV1(3,96, k=11,s=4,p=0)
-        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)#AlexPool1(k=3, s=2)
-        self.relu1 = nn.ReLU()
+            nn.Conv2d( 32, 64, kernel_size=3,stride=1, padding=1 ),#AlexCONV2(96, 256,k=5,s=1,p=2)
+            nn.ReLU( inplace=True ),
+            nn.MaxPool2d( kernel_size=2, stride=2 ),#AlexPool2(k=3,s=2)
 
-        # self.conv2 = nn.Conv2d(96, 256, kernel_size=5,stride=1,padding=2)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)#AlexCONV2(96, 256,k=5,s=1,p=2)
-        self.pool2 = nn.MaxPool2d(kernel_size=2,stride=2)#AlexPool2(k=3,s=2)
-        self.relu2 = nn.ReLU()
+            nn.Conv2d( 64, 128, kernel_size=3, stride= 1, padding=1 ),#AlexCONV3(256,384,k=3,s=1,p=1)
+            nn.ReLU( inplace=True ),
 
+            nn.Conv2d( 128, 256, kernel_size=3,stride= 1, padding=1 ),#AlexCONV4(384, 384, k=3,s=1,p=1)
+            nn.ReLU( inplace=True ),
 
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)#AlexCONV3(256,384,k=3,s=1,p=1)
-        # self.conv4 = nn.Conv2d(384, 384, kernel_size=3, stride=1, padding=1)
-        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)#AlexCONV4(384, 384, k=3,s=1,p=1)
-        self.conv5 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)#AlexCONV5(384, 256, k=3, s=1,p=1)
-        self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)#AlexPool3(k=3,s=2)
-        self.relu3 = nn.ReLU()
+            nn.Conv2d( 256, 256, kernel_size=3,stride= 1, padding=1 ),#AlexCONV5(384, 256, k=3, s=1,p=1)
+            nn.ReLU( inplace=True ),
+            nn.MaxPool2d( kernel_size=2, stride=2 ),
+        )
+        self.classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear( 256 * 3 * 3, 1024 ),#AlexFC6(256*6*6, 4096)
+            nn.ReLU( inplace=True ),
+            nn.Dropout(),
+            nn.Linear( 1024, 512 ),#AlexFC6(4096,4096)
+            nn.ReLU( inplace=True ),
+            nn.Linear( 512, 10 ),#AlexFC6(4096,1000)
+        )
 
-        self.fc6 = nn.Linear(256*3*3, 1024)  #AlexFC6(256*6*6, 4096)
-        self.fc7 = nn.Linear(1024, 512) #AlexFC6(4096,4096)
-        self.fc8 = nn.Linear(512, 10)  #AlexFC6(4096,1000)
-
-    def forward(self,x):
-        x = self.conv1(x)
-        x = self.pool1(x)
-        x = self.relu1(x)
-        x = self.conv2(x)
-        x = self.pool2(x)
-        x = self.relu2(x)
-        x = self.conv3(x)
-        x = self.conv4(x)
-        x = self.conv5(x)
-        x = self.pool3(x)
-        x = self.relu3(x)
-        x = x.view(-1, 256 * 3 * 3)#Alex: x = x.view(-1, 256*6*6)
-        x = self.fc6(x)
-        x = F.relu(x)
-        x = self.fc7(x)
-        x = F.relu(x)
-        x = self.fc8(x)
+    def forward(self, x):
+        x = self.features( x )
+        x = x.view( -1, 256 * 3 * 3 )#Alex: x = x.view(-1, 256*6*6)
+        x = self.classifier( x )
         return x
 
 #transform
