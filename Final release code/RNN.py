@@ -13,8 +13,8 @@ train_loader = torch.utils.data.DataLoader(
     torchvision.datasets.MNIST('data', train=True, download= True,
                                transform=torchvision.transforms.Compose([
                                    torchvision.transforms.ToTensor(),
-                                   torchvision.transforms.Normalize(
-                                       (0.1307,), (0.3081, ))
+                                   torchvision.transforms.Normalize(   # normalize the data to be distributed around zero, so it could 
+                                       (0.1307,), (0.3081, ))          # be zero by chance
                                ])),
     batch_size=batch_size, shuffle=True)
 
@@ -27,6 +27,7 @@ test_loader = torch.utils.data.DataLoader(
                                ])),
     batch_size=batch_size, shuffle=False)
 
+# make it iterable
 x, y = next(iter(train_loader))
 print(x.shape, y.shape, x.min(), x.max())
 plot_image(x, y, 'Real Value')
@@ -50,6 +51,7 @@ class RNN(nn.Module):
 # model and optimizer
 model = RNN(28, 100, 2)
 
+# loss function and optimizer(loss function has to be decleared before getting into loop)
 loss_func = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 
@@ -58,31 +60,26 @@ iteration = 0
 for epoch in range(num_epochs):
     for step, (images, targets) in enumerate(train_loader):
         images = images.view(-1, 28, 28).requires_grad_()
-        optimizer.zero_grad()
+        optimizer.zero_grad()                 # set gradients for all parameters zero
         outputs = model(images)
-        loss = loss_func(outputs, targets)
+        loss = loss_func(outputs, targets)    # use loss function
         loss.backward()
         optimizer.step()
 
         iteration += 1
 
-        if step % 500 == 0:
+        if step % 500 == 0:                    # every 500 batch size, code will go to test process 
             correct = 0
-            total = 0
-            p1 = 0  # Precision Rate
-            p2 = 0
-            r1 = 0  # Recall Rate
-            r2 = 0
-            f1 = 0
+            total_data = 0
             for images, targets in test_loader:
                 images = images.view(-1, 28,28)
                 outputs = model(images)
                 _, predicted = torch.max(outputs.data, 1) # find the target with the most possibility
-                total += targets.size(0)
+                total_data += targets.size(0)
                 correct += (predicted == targets).sum()
-            accuracy = float(100 * correct / total)
+            accuracy = float(100 * correct / total_data)
             print('Iteration: {}. Loss: {:.3f}%. Accuracy: {:.3f}%'.format(iteration, loss.item(), accuracy))
-
+# produce six random images and show their prediction
 data, targets = next(iter(test_loader))
 out = RNN(data.view(data.size(0), 28*28),100,2)
 pred = out.argmax(dim = 1)
