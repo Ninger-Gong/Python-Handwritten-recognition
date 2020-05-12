@@ -12,7 +12,7 @@ from sklearn.metrics import confusion_matrix
 from torch.autograd import Variable
 
 BATCH_SIZE = 512  # How many data working in parallel
-Num_Epochs = 1
+Num_Epochs = 20
 Device = torch.device("cuda" if torch.cuda.is_available()
                             else "cpu")
 
@@ -35,7 +35,6 @@ test_loader = torch.utils.data.DataLoader(
             ])),
 batch_size = BATCH_SIZE, shuffle = True)
 
-image_loader("微信图片_20200508150034.png")
 
 # Building model
 class ConvNet(nn.Module):
@@ -69,7 +68,6 @@ train_loss = []
 
 # Training function
 def train(model, device, train_loader, optimizer, epoch):
-    # start = time.time()
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
@@ -79,11 +77,8 @@ def train(model, device, train_loader, optimizer, epoch):
         loss.backward()                    # back-propagation
         optimizer.step()
         train_loss.append(loss.item())
-        # time_used = (time.time() - start)
-        # minutes = time_used // 60
-        # seconds = time_used - minutes * 60
+
         if (batch_idx + 1) % 30 == 0:
-            # print("Time consumed: %im %is" % (minutes, seconds))
             print('Train Epoch: {} [{} out of {} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
@@ -142,6 +137,12 @@ data, target = next(iter(test_loader))
 out = model(data)
 pred = out.argmax(dim = 1)
 plot_image(data, pred, 'Prediction')
+
+
+
+
+
+
 
 
 
