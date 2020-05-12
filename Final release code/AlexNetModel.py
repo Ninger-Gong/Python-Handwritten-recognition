@@ -18,27 +18,32 @@ class AlexNet(nn.Module):
         self.features = nn.Sequential(
             # because the size of images of MNIST is 28x28， but AlexNet is 227x227. So the parameter of the Net needs to be changed
             # First convolution layer，1 input channel，32 output with 11*11 kernel
+            #block one
             nn.Conv2d( 1, 32, kernel_size=3, padding=1 ),#AlexCONV1(3,96, k=11,s=4,p=0)
             # relu after convolition
             nn.ReLU( inplace=True ),
             # Max poolling
             nn.MaxPool2d( kernel_size=2, stride=2 ),#AlexPool1(k=3, s=2)
-            # here is one block
-
+            
+            #block two
             nn.Conv2d( 32, 64, kernel_size=3,stride=1, padding=1 ),#AlexCONV2(96, 256,k=5,s=1,p=2)
             nn.ReLU( inplace=True ),
             nn.MaxPool2d( kernel_size=2, stride=2 ),#AlexPool2(k=3,s=2)
 
+            #block three
             nn.Conv2d( 64, 128, kernel_size=3, stride= 1, padding=1 ),#AlexCONV3(256,384,k=3,s=1,p=1)
             nn.ReLU( inplace=True ),
 
+            #block four
             nn.Conv2d( 128, 256, kernel_size=3,stride= 1, padding=1 ),#AlexCONV4(384, 384, k=3,s=1,p=1)
             nn.ReLU( inplace=True ),
 
+            #block five
             nn.Conv2d( 256, 256, kernel_size=3,stride= 1, padding=1 ),#AlexCONV5(384, 256, k=3, s=1,p=1)
             nn.ReLU( inplace=True ),
             nn.MaxPool2d( kernel_size=2, stride=2 ),
         )
+        # full-connection layers
         self.classifier = nn.Sequential(
             nn.Dropout(),
             nn.Linear( 256 * 3 * 3, 1024 ),#AlexFC6(256*6*6, 4096)
@@ -58,8 +63,8 @@ class AlexNet(nn.Module):
 #transform
 transform = transforms.Compose([
                     transforms.RandomHorizontalFlip(),
-                    transforms.RandomGrayscale(),
-                    transforms.ToTensor(),
+                    transforms.RandomGrayscale(), #if the dataset is 3D_RGB it need to set to 2D
+                    transforms.ToTensor(), #set the dataset from images to tensor
 
 
 ])
@@ -69,12 +74,24 @@ transform1 = transforms.Compose([
 ])
 
 # dataset of MNIST
-trainset = torchvision.datasets.MNIST(root='./data',train=True,download=True,transform=transform)
+#trainset = torchvision.datasets.MNIST(root='./data',train=True,download=True,transform=transform)
 
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=100,shuffle=True,num_workers=0)# windows下num_workers设置为0，不然有bug
+#trainloader = torch.utils.data.DataLoader(trainset, batch_size=100,shuffle=True,num_workers=0)
 
-testset = torchvision.datasets.MNIST(root='./data',train=False,download=True,transform=transform1)
-testloader = torch.utils.data.DataLoader(testset,batch_size=100,shuffle=False,num_workers=0)
+#testset = torchvision.datasets.MNIST(root='./data',train=False,download=True,transform=transform1)
+#testloader = torch.utils.data.DataLoader(testset,batch_size=100,shuffle=False,num_workers=0)
+
+# load the data MNIST
+# train loader
+train_loader = torch.utils.data.DataLoader(
+    datasets.MNIST('data', train = True, download = True,
+              transform = transform),
+    batch_size = 100, shuffle = True)
+
+# test loader
+test_loader = torch.utils.data.DataLoader(
+    datasets.MNIST('data', train = False, download = True, transform = transform1),
+    batch_size = 100, shuffle = True)
 
 #net
 net = AlexNet()
@@ -121,7 +138,7 @@ net = torch.load('MNIST.pkl')
 
 #start recognition
 with torch.no_grad():
-    #All Tensor的requires_grad will be set as False
+    #All Tensor requires_grad will be set as False
     correct = 0
     total = 0
     for data in testloader:
