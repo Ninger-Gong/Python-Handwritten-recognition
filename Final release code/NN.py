@@ -17,7 +17,7 @@ train_loader = torch.utils.data.DataLoader(
     torchvision.datasets.MNIST('mnist_data', train=True, download= True,
                                transform=torchvision.transforms.Compose([
                                    torchvision.transforms.ToTensor(),
-                                   torchvision.transforms.Normalize(
+                                   torchvision.transforms.Normalize(     # normalise the data to be distributed around zero
                                        (0.1307,), (0.3081, ))
                                ])),
     batch_size = batch_size, shuffle = True)
@@ -30,6 +30,7 @@ test_loader = torch.utils.data.DataLoader(
                                        (0.1307,), (0.3081,))
                                ])),
     batch_size=batch_size, shuffle=False)
+# make loader iterable
 x, y = next(iter(train_loader))
 print(x.shape, y.shape,x.min(), x.max())
 plot_image(x, y ,'Real Value')
@@ -38,16 +39,17 @@ plot_image(x, y ,'Real Value')
 class NormalNet(nn.Module):
     def __init__(self):
         super(NormalNet, self).__init__()
-        self.fc1 = nn.Linear(28*28, 256)
-        self.fc2 = nn.Linear(256, 64)
-        self.fc3 = nn.Linear(64, 10)
+        self.fc1 = nn.Linear(28*28, 256)       # the first full connected layer
+        self.fc2 = nn.Linear(256, 64)          # the second full connected layer
+        self.fc3 = nn.Linear(64, 10)           # the third full connected layer
 
     def forward(self, x):
-        out = F.relu(self.fc1(x))
+        out = F.relu(self.fc1(x))               #ReLu function used for non linearity
         out = F.relu(self.fc2(out))
         out = self.fc3(out)
         return out
 
+# model and optimizer
 NormalNet = NormalNet()
 optimizer = optim.SGD(NormalNet.parameters(), lr=0.01, momentum= 0.9)
 
@@ -69,16 +71,21 @@ for epoch in range (1,num_epochs+1):
         if batch_idx % 512 == 0:
             print('Number of Epochs: {} and loss is {:.5f}'.format(epoch, loss.item()))
 
-plot_curve(train_loss)
+plot_curve(train_loss)     # helper function used for plot loss curve
 
 
 
 # test process
 num_correct = 0
+p1 = 0
+p2 = 0
+r1 = 0
+r2 = 0
+f1 = 0
 for data, target in test_loader:
     data = data.view(data.size(0), 28*28)
     out = NormalNet(data)
-    pred = out.argmax(dim = 1)
+    pred = out.argmax(dim = 1)      #find the target with the most possibility
     correct = pred.eq(target).sum().float().item()
     num_correct += correct
 
@@ -94,6 +101,7 @@ print("\nPrecision Rate: {:.3f}% and {:.3f}%, Recall Rate: {:.3f}% and {:.3f}%, 
 acc = num_correct / len(test_loader.dataset)
 print('Test Accuracy: {:.3f}%'.format(acc))
 
+# to show random six images with their predictions
 data, targets = next(iter(test_loader))
 out = NormalNet(data.view(data.size(0), 28*28))
 pred = out.argmax(dim = 1)
