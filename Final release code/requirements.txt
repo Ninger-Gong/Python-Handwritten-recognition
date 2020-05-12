@@ -1,2 +1,5 @@
 pip install -U scikit-learn
 pip install matplotlib
+pip install pytorch
+pip install torchvision
+pip install numpy
